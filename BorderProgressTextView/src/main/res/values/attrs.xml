@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="BorderProgressTextView">
+        <attr name="bp_corner_radius" format="dimension"/>
+        <attr name="bp_border_width" format="dimension" />
+        <attr name="bp_border_color" format="color" />
+        <attr name="bp_mask_color" format="color" />
+        <attr name="bp_duration" format="integer" />
+        <attr name="bp_max_progress" format="integer" />
+        <attr name="bp_repeat_count" format="integer" />
+    </declare-styleable>
+
+</resources>
