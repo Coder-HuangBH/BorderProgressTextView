@@ -34,7 +34,7 @@ class BorderProgressTextView : AppCompatTextView {
     private var mMaskColor = 0 //遮罩层颜色(最好带透明度)
     private var mDuration = 3000 //动画总时长
     private var mRepeatCount = 0 //重复次数
-    private var mListener : OnEventListener? = null //事件回调监听
+    private var mListener : OnAnimationEventListener? = null //事件回调监听
 
     constructor(context: Context) : super(context) {
         init(null)
@@ -118,6 +118,7 @@ class BorderProgressTextView : AppCompatTextView {
         )
     }
 
+
     override fun setPadding(
         @IntRange(from = 0) left: Int, @IntRange(from = 0) top: Int,
         @IntRange(from = 0) right: Int, @IntRange(from = 0) bottom: Int
@@ -164,10 +165,6 @@ class BorderProgressTextView : AppCompatTextView {
         path.lineTo(halfBorderWidth, offset)
         path.quadTo(halfBorderWidth, halfBorderWidth, offset, halfBorderWidth)
         path.close()
-        //        不用addRoundRect是因为它的起点不在中间  这样在onDraw里的计算会不大好理解  就自己画圈
-//        mPathOuter.addRoundRect(halfBorderWidth, halfBorderWidth,
-//            mWidth - halfBorderWidth, mHeight - halfBorderWidth,
-//                borderRadius, borderRadius, Path.Direction.CW)
         mPathMeasure = PathMeasure().apply {
             setPath(path, false)
             mPathLength = length
@@ -195,6 +192,11 @@ class BorderProgressTextView : AppCompatTextView {
         this.mRepeatCount = repeatCount
     }
 
+    fun setCurrentProgress(progress : Int) {
+        mCurrentProgress = (progress.coerceAtLeast(0)).coerceAtMost(mMaxProgress)
+        invalidate()
+    }
+
     fun startProgressAnimation() {
         stopProgressAnimation()
         mProgressAnimator = ValueAnimator.ofInt(mMaxProgress, 0).apply {
@@ -220,10 +222,22 @@ class BorderProgressTextView : AppCompatTextView {
         }
     }
 
-    private fun stopProgressAnimation() {
-        mProgressAnimator?.apply {
-            if (isRunning)
-                cancel()
+    fun isAnimationRunning() : Boolean {
+        return mProgressAnimator?.isRunning == true
+    }
+
+    fun resumeProgressAnimation() {
+        mProgressAnimator?.resume()
+    }
+
+    fun pauseProgressAnimation() {
+        mProgressAnimator?.pause()
+    }
+
+    fun stopProgressAnimation() {
+        mProgressAnimator?.run {
+            cancel()
+            end()
         }
     }
 
@@ -241,28 +255,12 @@ class BorderProgressTextView : AppCompatTextView {
                 mPathLength * (1 - mCurrentProgress / (mMaxProgress * 1f)),
                 mPathLength, mDest, true
             )
-//            mPathMeasure!!.getSegment(
-//                mPathLength * (0.36F),
-//                mPathLength, mDest, true
-//            )
             canvas.drawPath(mDest!!, mBorderPaint!!)
         }
         super.onDraw(canvas)
     }
 
-    fun setListener(listener: OnEventListener) {
+    fun setListener(listener: OnAnimationEventListener) {
         this.mListener = listener
-    }
-
-    interface OnEventListener {
-        /**
-         * 进度条动画开始下一次播放
-         */
-        fun onAnimationRepeat() {}
-
-        /**
-         * 进度条动画结束
-         */
-        fun onAnimationEnd() {}
     }
 }
